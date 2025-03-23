@@ -22,7 +22,7 @@ class YandexGPT:
                 self.url,
                 headers=headers,
                 json={
-                    "modelUri": "gpt://b1gf4qps1fac8r8isu86/yandexgpt-lite",
+                    "modelUri": "gpt://b1gghm0ajm9pabpu0jiu/yandexgpt",
                     "completionOptions": {
                         "stream": False,
                         "temperature": 0.6,
