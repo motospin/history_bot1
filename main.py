@@ -36,6 +36,8 @@ async def send_welcome(message: Message):
 @dp.callback_query(F.data.startswith("epoch_"))
 async def process_epoch_choice(callback: CallbackQuery):
     epoch = callback.data.split("_")[1]
+    start_year = {"ri": 1721, "ussr": 1922, "rf": 1991}[epoch]
+    await db.update_user_preferences(callback.from_user.id, epoch, None, start_year)
     await callback.answer()
     await callback.message.answer(
         "Выберите уровень сложности изучения:",
@@ -46,6 +48,8 @@ async def process_epoch_choice(callback: CallbackQuery):
 @dp.callback_query(F.data.startswith("diff_"))
 async def process_difficulty_choice(callback: CallbackQuery):
     difficulty = callback.data.split("_")[1]
+    user_data = await db.get_user_progress(callback.from_user.id)
+    await db.update_user_preferences(callback.from_user.id, user_data['selected_epoch'], difficulty, user_data['start_year'])
     await callback.answer()
     await callback.message.answer(
         "Хотите получать уведомления по расписанию?",
@@ -98,6 +102,11 @@ async def send_history_fact(user_id: int):
     if user_data['current_year']:
         new_year = user_data['current_year'] + 1
         await db.update_current_year(user_id, new_year)
+
+# Обработчик команды /fact
+@dp.message(Command("fact"))
+async def send_fact_command(message: Message):
+    await send_history_fact(message.from_user.id)
 
 # Запуск бота
 async def main():
