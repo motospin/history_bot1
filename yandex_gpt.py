@@ -49,7 +49,15 @@ class YandexGPT:
                 print(f"YandexGPT API Response: {result}")
 
                 try:
-                    return result["result"]["alternatives"][0]["text"]
+                    if "result" in result:
+                        return result["result"]["alternatives"][0]["text"]
+                    elif "results" in result:
+                        return result["results"][0]["text"]
+                    elif "generated_text" in result:
+                        return result["generated_text"]
+                    else:
+                        print(f"Unknown response format: {result}")
+                        return "Извините, произошла ошибка с форматом ответа."
                 except (KeyError, IndexError) as e:
                     print(f"Error parsing response: {e}\nFull response: {result}")
                     return "Извините, произошла ошибка при обработке ответа."
