@@ -41,7 +41,14 @@ class YandexGPT:
                 }
             ) as response:
                 result = await response.json()
-                return result["result"]["alternatives"][0]["message"]["text"]
+                if response.status != 200:
+                    print(f"Error from YandexGPT API: {result}")
+                    return "Извините, произошла ошибка при генерации исторического факта."
+                try:
+                    return result["result"]["alternatives"][0]["message"]["text"]
+                except (KeyError, IndexError) as e:
+                    print(f"Unexpected response format: {result}")
+                    return "Извините, произошла ошибка при обработке ответа."
     
     def _create_prompt(self, epoch: str, year: Optional[int], difficulty: str) -> str:
         base_prompt = f"Создай историческую справку об эпохе {epoch}"
