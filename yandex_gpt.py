@@ -41,13 +41,26 @@ class YandexGPT:
                 }
             ) as response:
                 result = await response.json()
+                print(f"YandexGPT API Response: {result}")  # Debug log
+                
                 if response.status != 200:
                     print(f"Error from YandexGPT API: {result}")
                     return "Извините, произошла ошибка при генерации исторического факта."
+                
                 try:
-                    return result["result"]["alternatives"][0]["message"]["text"]
+                    if "error" in result:
+                        print(f"API Error: {result['error']}")
+                        return "Извините, сервис временно недоступен. Попробуйте позже."
+                        
+                    if "results" in result:  # New format check
+                        return result["results"][0]["alternatives"][0]["message"]["text"]
+                    elif "result" in result:  # Old format check
+                        return result["result"]["alternatives"][0]["message"]["text"]
+                    else:
+                        print(f"Unexpected response structure: {result}")
+                        return "Извините, произошла ошибка при обработке ответа."
                 except (KeyError, IndexError) as e:
-                    print(f"Unexpected response format: {result}")
+                    print(f"Error parsing response: {e}\nFull response: {result}")
                     return "Извините, произошла ошибка при обработке ответа."
     
     def _create_prompt(self, epoch: str, year: Optional[int], difficulty: str) -> str:
