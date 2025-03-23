@@ -16,9 +16,27 @@ class Database:
                     difficulty_level TEXT,
                     start_year INTEGER,
                     current_year INTEGER,
+                    last_fact_date TEXT,
                     subscription_active BOOLEAN DEFAULT 1
                 )
             ''')
+            await db.commit()
+            
+    async def get_user_progress(self, user_id: int):
+        async with aiosqlite.connect(self.db_name) as db:
+            db.row_factory = aiosqlite.Row
+            async with db.execute(
+                'SELECT * FROM users WHERE user_id = ?', 
+                (user_id,)
+            ) as cursor:
+                return await cursor.fetchone()
+                
+    async def update_current_year(self, user_id: int, new_year: int):
+        async with aiosqlite.connect(self.db_name) as db:
+            await db.execute(
+                'UPDATE users SET current_year = ? WHERE user_id = ?',
+                (new_year, user_id)
+            )
             await db.commit()
 
     async def add_user(self, user_id: int):

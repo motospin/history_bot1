@@ -74,13 +74,30 @@ async def process_schedule_choice(callback: CallbackQuery):
             "Хорошо! Вы можете использовать команду /fact для получения исторического факта в любое время."
         )
 
+from yandex_gpt import YandexGPT
+
+gpt = YandexGPT()
+
 async def send_history_fact(user_id: int):
-    # Здесь будет логика генерации исторического факта
-    # В будущем добавим интеграцию с YandexGPT
+    user_data = await db.get_user_progress(user_id)
+    if not user_data:
+        return
+        
+    fact = await gpt.generate_history_fact(
+        epoch=user_data['selected_epoch'],
+        year=user_data['current_year'],
+        difficulty=user_data['difficulty_level']
+    )
+    
     await bot.send_message(
         user_id,
-        "Исторический факт дня: [Здесь будет сгенерированный факт]"
+        f"📚 Исторический факт:\n\n{fact}"
     )
+    
+    # Обновляем текущий год для следующего факта
+    if user_data['current_year']:
+        new_year = user_data['current_year'] + 1
+        await db.update_current_year(user_id, new_year)
 
 # Запуск бота
 async def main():

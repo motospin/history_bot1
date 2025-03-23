@@ -454,6 +454,7 @@ dependencies = [
     { name = "aiohttp" },
     { name = "aiosqlite" },
     { name = "apscheduler" },
+    { name = "yandex-gpt" },
 ]
 
 [package.metadata]
@@ -462,6 +463,7 @@ requires-dist = [
     { name = "aiohttp", specifier = ">=3.11.14" },
     { name = "aiosqlite", specifier = ">=0.21.0" },
     { name = "apscheduler", specifier = ">=3.11.0" },
+    { name = "yandex-gpt", specifier = ">=0.3.0" },
 ]
 
 [[package]]
@@ -492,6 +494,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/8b/2e/c14812d3d4d9cd1773c6be938f89e5735a1f11a9f184ac3639b93cef35d5/tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd", size = 30761 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c2/14/e2a54fabd4f08cd7af1c07030603c3356b74da07f7cc056e600436edfa17/tzlocal-5.3.1-py3-none-any.whl", hash = "sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d", size = 18026 },
+]
+
+[[package]]
+name = "yandex-gpt"
+version = "0.3.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/7e/dd/b659555e908e27fe443b073bc23e842c45c9bc9ae43417fc8977b794efab/yandex_gpt-0.3.0.tar.gz", hash = "sha256:7ff34e54c8b252849d12098e79ac4d8bf08cfcfc5d992b535b8b0b8feb785895", size = 3794 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3f/75/f9f2fc3aa476abed1333c054147d49f6aa4141f0cdfbf16703bf34563f30/yandex_gpt-0.3.0-py3-none-any.whl", hash = "sha256:b2c35a26c7e4264c194a770d58efe0d29af34b9ea383c9a33056d25ca7d6b973", size = 5668 },
 ]
 
 [[package]]
