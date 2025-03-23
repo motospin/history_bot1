@@ -40,25 +40,16 @@ class YandexGPT:
                     ]
                 }
             ) as response:
-                result = await response.json()
-                print(f"YandexGPT API Response: {result}")  # Debug log
-                
                 if response.status != 200:
-                    print(f"Error from YandexGPT API: {result}")
+                    error_text = await response.text()
+                    print(f"Error from YandexGPT API: {error_text}")
                     return "Извините, произошла ошибка при генерации исторического факта."
                 
+                result = await response.json()
+                print(f"YandexGPT API Response: {result}")
+
                 try:
-                    if "error" in result:
-                        print(f"API Error: {result['error']}")
-                        return "Извините, сервис временно недоступен. Попробуйте позже."
-                        
-                    if "results" in result:  # New format check
-                        return result["results"][0]["alternatives"][0]["message"]["text"]
-                    elif "result" in result:  # Old format check
-                        return result["result"]["alternatives"][0]["message"]["text"]
-                    else:
-                        print(f"Unexpected response structure: {result}")
-                        return "Извините, произошла ошибка при обработке ответа."
+                    return result["result"]["alternatives"][0]["text"]
                 except (KeyError, IndexError) as e:
                     print(f"Error parsing response: {e}\nFull response: {result}")
                     return "Извините, произошла ошибка при обработке ответа."
