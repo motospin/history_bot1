@@ -4,6 +4,7 @@ import signal
 import sys
 from datetime import datetime
 from aiogram import Bot, Dispatcher, F
+from aiogram.exceptions import ErrorEvent
 from aiogram.types import Message, CallbackQuery
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 from aiogram.exceptions import TelegramAPIError
