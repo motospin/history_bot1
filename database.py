@@ -1,3 +1,4 @@
+
 import aiosqlite
 import logging
 from datetime import datetime
@@ -11,45 +12,48 @@ class Database:
         try:
             async with aiosqlite.connect(self.db_name) as db:
                 logging.info("Initializing database...")
-            # Создаем основную таблицу пользователей
-            await db.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY,
-                    selected_epoch TEXT,
-                    difficulty_level TEXT,
-                    start_year INTEGER,
-                    current_year INTEGER,
-                    last_fact_date TEXT,
-                    subscription_active BOOLEAN DEFAULT 1,
-                    facts_viewed INTEGER DEFAULT 0,
-                    correct_answers INTEGER DEFAULT 0,
-                    wrong_answers INTEGER DEFAULT 0,
-                    setup_completed BOOLEAN DEFAULT 0
-                )
-            ''')
-            
-            # Создаем таблицу выбранных тем
-            await db.execute('''
-                CREATE TABLE IF NOT EXISTS user_themes (
-                    user_id INTEGER,
-                    theme TEXT,
-                    PRIMARY KEY (user_id, theme),
-                    FOREIGN KEY (user_id) REFERENCES users(user_id)
-                )
-            ''')
-            
-            # Создаем таблицу для отслеживания просмотренных фактов
-            await db.execute('''
-                CREATE TABLE IF NOT EXISTS viewed_facts (
-                    user_id INTEGER,
-                    epoch TEXT,
-                    year INTEGER,
-                    view_date TEXT,
-                    FOREIGN KEY (user_id) REFERENCES users(user_id)
-                )
-            ''')
-            
-            await db.commit()
+                # Создаем основную таблицу пользователей
+                await db.execute('''
+                    CREATE TABLE IF NOT EXISTS users (
+                        user_id INTEGER PRIMARY KEY,
+                        selected_epoch TEXT,
+                        difficulty_level TEXT,
+                        start_year INTEGER,
+                        current_year INTEGER,
+                        last_fact_date TEXT,
+                        subscription_active BOOLEAN DEFAULT 1,
+                        facts_viewed INTEGER DEFAULT 0,
+                        correct_answers INTEGER DEFAULT 0,
+                        wrong_answers INTEGER DEFAULT 0,
+                        setup_completed BOOLEAN DEFAULT 0
+                    )
+                ''')
+                
+                # Создаем таблицу выбранных тем
+                await db.execute('''
+                    CREATE TABLE IF NOT EXISTS user_themes (
+                        user_id INTEGER,
+                        theme TEXT,
+                        PRIMARY KEY (user_id, theme),
+                        FOREIGN KEY (user_id) REFERENCES users(user_id)
+                    )
+                ''')
+                
+                # Создаем таблицу для отслеживания просмотренных фактов
+                await db.execute('''
+                    CREATE TABLE IF NOT EXISTS viewed_facts (
+                        user_id INTEGER,
+                        epoch TEXT,
+                        year INTEGER,
+                        view_date TEXT,
+                        FOREIGN KEY (user_id) REFERENCES users(user_id)
+                    )
+                ''')
+                
+                await db.commit()
+        except Exception as e:
+            logging.error(f"Error initializing database: {e}")
+            raise
             
     async def get_user_progress(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Получить прогресс пользователя."""
@@ -62,18 +66,11 @@ class Database:
                     (user_id,)
                 ) as cursor:
                     row = await cursor.fetchone()
-                if row:
-                    return dict(row)
-                return None
+                    if row:
+                        return dict(row)
+                    return None
         except Exception as e:
             logging.error(f"Error getting user progress: {e}")
-            return None 
-                (user_id,)
-            ) as cursor:
-                row = await cursor.fetchone()
-            if row:
-                # Преобразуем sqlite3.Row в обычный словарь
-                return dict(row)
             return None
                 
     async def update_current_year(self, user_id: int, new_year: int):
