@@ -1,5 +1,7 @@
 import logging
 import os
+import signal
+import sys
 from datetime import datetime
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery
@@ -21,10 +23,7 @@ from keyboards import (
 logging.basicConfig(level=logging.INFO)
 
 # Инициализация бота и базы данных
-BOT_TOKEN = os.getenv('7079040743:AAF89lKBLucf0_yoSFrS1F3UEpZ9kXbOoyU')
-if not BOT_TOKEN:
-    logging.error("BOT_TOKEN")
-    exit()
+BOT_TOKEN = '7079040743:AAF89lKBLucf0_yoSFrS1F3UEpZ9kXbOoyU'
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -268,7 +267,7 @@ async def process_difficulty_choice(callback: CallbackQuery):
     user_data = await db.get_user_progress(callback.from_user.id)
     
     # Проверяем, новый ли пользователь
-    is_new_user = not user_data or not user_data['selected_epoch'] or not user_data.get('subscription_active', None)
+    is_new_user = not user_data or not user_data['selected_epoch'] or 'subscription_active' not in user_data or not user_data['subscription_active']
     
     if is_new_user:
         await db.update_user_preferences(
@@ -506,12 +505,29 @@ async def skip_test(callback: CallbackQuery):
         reply_markup=get_main_menu_keyboard()
     )
 
+# Функция для корректного завершения работы бота
+def signal_handler(sig, frame):
+    print("Получен сигнал завершения. Закрываю соединение с Telegram...")
+    asyncio.run(bot.session.close())
+    sys.exit(0)
+
+# Регистрируем обработчик сигналов
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
+
 # Запуск бота
 async def main():
     await db.init()
+    
+    # Настройка для корректной обработки завершения
+    await bot.delete_webhook(drop_pending_updates=True)
+    
     scheduler.start()
     await dp.start_polling(bot)
 
 if __name__ == '__main__':
     import asyncio
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        print("Бот остановлен!")

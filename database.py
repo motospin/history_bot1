@@ -57,7 +57,11 @@ class Database:
                 'SELECT * FROM users WHERE user_id = ?', 
                 (user_id,)
             ) as cursor:
-                return await cursor.fetchone()
+                row = await cursor.fetchone()
+            if row:
+                # Преобразуем sqlite3.Row в обычный словарь
+                return dict(row)
+            return None
                 
     async def update_current_year(self, user_id: int, new_year: int):
         """Обновить текущий год изучения."""
@@ -77,15 +81,28 @@ class Database:
             )
             await db.commit()
 
-    async def update_user_preferences(self, user_id: int, epoch: str, level: str, start_year: int):
-        """Обновить предпочтения пользователя."""
-        async with aiosqlite.connect(self.db_name) as db:
-            await db.execute('''
-                UPDATE users 
-                SET selected_epoch = ?, difficulty_level = ?, start_year = ?, current_year = ?
-                WHERE user_id = ?
-            ''', (epoch, level, start_year, start_year, user_id))
-            await db.commit()
+    # Сразу после метода update_user_preferences
+async def update_user_preferences(self, user_id: int, epoch: str, level: str, start_year: int):
+    """Обновить предпочтения пользователя."""
+    async with aiosqlite.connect(self.db_name) as db:
+        await db.execute('''
+            UPDATE users 
+            SET selected_epoch = ?, difficulty_level = ?, start_year = ?, current_year = ?
+            WHERE user_id = ?
+        ''', (epoch, level, start_year, start_year, user_id))
+        await db.commit()
+
+# Здесь добавьте новый метод
+async def update_difficulty(self, user_id: int, difficulty: str):
+    """Обновить уровень сложности для пользователя."""
+    async with aiosqlite.connect(self.db_name) as db:
+        await db.execute(
+            'UPDATE users SET difficulty_level = ? WHERE user_id = ?',
+            (difficulty, user_id)
+        )
+        await db.commit()
+
+# Далее может следовать метод update_epoch или get_active_users
 
     async def get_active_users(self):
         """Получить всех активных пользователей."""
