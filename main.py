@@ -291,20 +291,36 @@ async def process_difficulty_choice(callback: CallbackQuery):
 @dp.callback_query(F.data.startswith("schedule_"))
 async def process_schedule_choice(callback: CallbackQuery):
     choice = callback.data.split("_")[1]
+    user_id = callback.from_user.id
     
+    # Проверяем, настроены ли базовые параметры
+    user_data = await db.get_user_progress(user_id)
+    if not user_data or not user_data['selected_epoch'] or not user_data['difficulty_level']:
+        text = "Сначала необходимо выбрать эпоху и уровень сложности. Пожалуйста, настройте эти параметры."
+        await callback.message.edit_text(text, reply_markup=get_settings_keyboard())
+        return
+
     subscription_active = choice == "yes"
-    await db.update_subscription(callback.from_user.id, subscription_active)
+    await db.update_subscription(user_id, subscription_active)
     
     if subscription_active:
         # Настройка расписания для пользователя
+        job_id = f"fact_schedule_{user_id}"
+        # Удаляем старое расписание, если оно существует
+        scheduler.remove_job(job_id, ignore_if_not_exists=True)
+        # Добавляем новое расписание
         scheduler.add_job(
             send_history_fact,
             'cron',
             hour='9,14,19',
-            args=[callback.from_user.id]
+            args=[user_id],
+            id=job_id,
+            replace_existing=True
         )
         text = "Отлично! Вы будете получать исторические факты три раза в день: в 9:00, 14:00 и 19:00."
     else:
+        # Удаляем существующее расписание
+        scheduler.remove_job(f"fact_schedule_{user_id}", ignore_if_not_exists=True)
         text = "Хорошо! Вы можете использовать кнопку 'Получить факт' для получения исторического факта в любое время."
     
     # Проверяем, это первоначальная настройка или изменение настроек
