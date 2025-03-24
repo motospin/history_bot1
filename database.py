@@ -72,9 +72,6 @@ class Database:
         except Exception as e:
             logging.error(f"Error getting user progress: {e}")
             return None
-        except Exception as e:
-            logging.error(f"Error getting user progress: {e}")
-            return None
                 
     async def update_current_year(self, user_id: int, new_year: int):
         """Обновить текущий год изучения."""

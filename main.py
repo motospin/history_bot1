@@ -545,17 +545,14 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 # Запуск бота
-@dp.error()
-async def error_handler(event: ErrorEvent):
+@dp.errors()
+async def error_handler(exception: Exception):
     """Глобальный обработчик ошибок"""
-    logging.error(f"Update {event.update} caused error {event.exception}")
+    logging.error(f"Error occurred: {exception}")
     try:
-        # Если это ошибка Telegram API
-        if isinstance(event.exception, TelegramAPIError):
-            if hasattr(event.update, 'message'):
-                await event.update.message.answer(
-                    "Произошла ошибка при обработке запроса. Попробуйте позже."
-                )
+        if isinstance(exception, TelegramAPIError):
+            # Здесь можно добавить специфическую обработку ошибок Telegram API
+            logging.error(f"Telegram API Error: {exception}")
     except Exception as e:
         logging.error(f"Error in error handler: {e}")
 
