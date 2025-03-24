@@ -56,9 +56,18 @@ class Database:
         try:
             async with aiosqlite.connect(self.db_name) as db:
                 logging.debug(f"Getting progress for user {user_id}")
-            db.row_factory = aiosqlite.Row
-            async with db.execute(
-                'SELECT * FROM users WHERE user_id = ?', 
+                db.row_factory = aiosqlite.Row
+                async with db.execute(
+                    'SELECT * FROM users WHERE user_id = ?', 
+                    (user_id,)
+                ) as cursor:
+                    row = await cursor.fetchone()
+                if row:
+                    return dict(row)
+                return None
+        except Exception as e:
+            logging.error(f"Error getting user progress: {e}")
+            return None 
                 (user_id,)
             ) as cursor:
                 row = await cursor.fetchone()
