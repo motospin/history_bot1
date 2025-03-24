@@ -8,7 +8,9 @@ class Database:
         self.db_name = db_name
 
     async def init(self):
-        async with aiosqlite.connect(self.db_name) as db:
+        try:
+            async with aiosqlite.connect(self.db_name) as db:
+                logging.info("Initializing database...")
             # Создаем основную таблицу пользователей
             await db.execute('''
                 CREATE TABLE IF NOT EXISTS users (
@@ -51,7 +53,9 @@ class Database:
             
     async def get_user_progress(self, user_id: int) -> Optional[Dict[str, Any]]:
         """Получить прогресс пользователя."""
-        async with aiosqlite.connect(self.db_name) as db:
+        try:
+            async with aiosqlite.connect(self.db_name) as db:
+                logging.debug(f"Getting progress for user {user_id}")
             db.row_factory = aiosqlite.Row
             async with db.execute(
                 'SELECT * FROM users WHERE user_id = ?', 

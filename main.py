@@ -5,6 +5,8 @@ import sys
 from datetime import datetime
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message, CallbackQuery
+from aiogram.utils.keyboard import InlineKeyboardBuilder
+from aiogram.exceptions import TelegramAPIError
 from aiogram.filters import Command
 from aiogram.utils.keyboard import ReplyKeyboardMarkup, KeyboardButton
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -331,7 +333,17 @@ async def process_schedule_choice(callback: CallbackQuery):
         text += "\n\nНастройка завершена! Теперь вы можете начать изучение истории России."
         
     await callback.answer()
-    await callback.message.edit_text(text, reply_markup=get_main_menu_keyboard())
+    # Создаем inline клавиатуру для сообщения
+    keyboard = InlineKeyboardBuilder()
+    keyboard.button(text="🏠 Главное меню", callback_data="back_to_main")
+    await callback.message.edit_text(text, reply_markup=keyboard.as_markup())
+    
+    # Отправляем основное меню отдельным сообщением
+    await bot.send_message(
+        callback.from_user.id,
+        "Выберите действие:",
+        reply_markup=get_main_menu_keyboard()
+    )
 
 @dp.callback_query(F.data.startswith("theme_"))
 async def process_theme_choice(callback: CallbackQuery):
@@ -532,6 +544,20 @@ signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
 
 # Запуск бота
+@dp.error()
+async def error_handler(event: ErrorEvent):
+    """Глобальный обработчик ошибок"""
+    logging.error(f"Update {event.update} caused error {event.exception}")
+    try:
+        # Если это ошибка Telegram API
+        if isinstance(event.exception, TelegramAPIError):
+            if hasattr(event.update, 'message'):
+                await event.update.message.answer(
+                    "Произошла ошибка при обработке запроса. Попробуйте позже."
+                )
+    except Exception as e:
+        logging.error(f"Error in error handler: {e}")
+
 async def main():
     await db.init()
     
